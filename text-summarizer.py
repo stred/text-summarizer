@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-
+import nltk
 from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
 import numpy as np
@@ -59,6 +59,7 @@ def build_similarity_matrix(sentences, stop_words):
 
 
 def generate_summary(file_name, top_n=5):
+    nltk.download("stopwords")
     stop_words = stopwords.words('english')
     summarize_text = []
 
