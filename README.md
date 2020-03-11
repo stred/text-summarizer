@@ -2,7 +2,7 @@
 
 Originally forked from https://github.com/edubey/text-summarizer
 
-Updates by Stephen Redmond to replace file load with BeautifulSoup implementation that reads articles from websites such as BBC, Forbes, RTE, etc.
+Updates by **Stephen Redmond** to replace file load with BeautifulSoup implementation that reads articles from websites such as BBC, Forbes, RTE, etc.
 
 ### Understand Text Summarization and create your own summarizer in python
 
