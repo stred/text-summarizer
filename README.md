@@ -1,4 +1,4 @@
-# Text Summariser that reads from news articles
+# Web Article Summariser that reads and parses text from news articles
 
 Originally forked from https://github.com/edubey/text-summarizer
 
