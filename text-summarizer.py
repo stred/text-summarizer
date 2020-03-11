@@ -6,6 +6,8 @@ from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
 import numpy as np
 import networkx as nx
+import sys
+import getopt
 
 # Parse articles to sentences
 def urlToText(the_url):
@@ -123,9 +125,42 @@ def generate_summary(the_url, top_n=5):
     # Step 5 - Offcourse, output the summarize texr
     print("Summarize Text: \n", ". ".join(summarize_text))
 
-# let's begin
-#the_url = "https://www.bbc.com/news/world-europe-51815911"
-#the_url = "https://www.rte.ie/news/2020/0311/1121526-harris-covid-19/"
-the_url = "https://www.newsroom.co.nz/ideasroom/2020/03/12/1077762/eight-job-myths-about-artificial-intelligence"
+#generate_summary(the_url, 5)
 
-generate_summary(the_url, 5)
+def main(argv):
+   the_url = ''
+
+   try:
+      opts, args = getopt.getopt(argv,"h:u:",["url="])
+      #print(opts,args)
+   except getopt.GetoptError:
+      print('text-summarizer.py -u "https://server/path" [lines]')
+      sys.exit(2)
+   for opt, arg in opts:
+      if opt == '-h':
+         print('text-summarizer.py -u "https://server/path" [lines]')
+         sys.exit()
+      elif opt in ("-u", "--url"):
+         print("opt - " + arg)
+         the_url = arg
+      else:
+         print("No option detected")
+         print('text-summarizer.py -u "https://server/path" [lines]')
+         sys.exit()
+
+       
+   if len(args)>0:
+       try:
+           lines = int(args[0])
+           generate_summary(the_url, int(args[0]))
+       
+       except:
+           print("[lines] should be integer")
+           print('text-summarizer.py -u "https://server/path" [lines]')
+           sys.exit()
+
+   else:
+       generate_summary(the_url)
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
