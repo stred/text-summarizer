@@ -1,21 +1,63 @@
 #!/usr/bin/env python
 # coding: utf-8
-import nltk
+import requests
+from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
 import numpy as np
 import networkx as nx
- 
-def read_article(file_name):
-    file = open(file_name, "r")
-    filedata = file.readlines()
-    article = filedata[0].split(". ")
-    sentences = []
 
-    for sentence in article:
-        print(sentence)
-        sentences.append(sentence.replace("[^a-zA-Z]", " ").split(" "))
-    sentences.pop() 
+# Parse articles to sentences
+def urlToText(the_url):
+
+    # Download the data
+    htmlData = requests.get(the_url).text
+    soup = BeautifulSoup(htmlData,'html.parser')
+
+    #title = soup.title
+    #article_headline = soup.find('h1',{'class':'story-body__h1'})
+
+    # Get the Div containing the article
+    # BBC
+    story_inner = soup.find('div',{'class':'story-body__inner'})
+    # Forbes
+    if(len(str(story_inner))<10):
+        story_inner = soup.find('div',{'class':'article-body'})
+    # RTE
+    if(len(str(story_inner))<10):
+        story_inner = soup.find('section',{'class':'article-body'})
+    # HBR
+    if(len(str(story_inner))<10):
+        story_inner = soup.find('div',{'class':'article'})
+    # Sky News
+    if(len(str(story_inner))<10):
+        story_inner = soup.find('div',{'class':'sdc-article-body'})
+    
+    # If we got a result, re-parse it
+    if(len(str(story_inner))>10):
+        soup = BeautifulSoup(str(story_inner), 'html.parser')
+
+    # Find all the "<p>" elements
+    article = soup.findAll('p',{'class': None})
+    
+    if len(article) == 0:
+        article = soup.findAll('p')
+        
+    # Convert results to an array of innerText items
+    articleText = [a.text for a in article]
+
+    return articleText
+
+def read_article(the_url):
+
+    paragraphs = urlToText(the_url)
+    sentences = []
+    
+    for paragraph in paragraphs:
+        article = paragraph.split(". ")
+        for sentence in article:
+            if(len(sentence.strip())>0):
+                sentences.append(sentence.replace("[^a-zA-Z]", " ").split(" "))
     
     return sentences
 
@@ -58,13 +100,12 @@ def build_similarity_matrix(sentences, stop_words):
     return similarity_matrix
 
 
-def generate_summary(file_name, top_n=5):
-    nltk.download("stopwords")
+def generate_summary(the_url, top_n=5):
     stop_words = stopwords.words('english')
     summarize_text = []
 
     # Step 1 - Read text anc split it
-    sentences =  read_article(file_name)
+    sentences =  read_article(the_url)
 
     # Step 2 - Generate Similary Martix across sentences
     sentence_similarity_martix = build_similarity_matrix(sentences, stop_words)
@@ -75,7 +116,6 @@ def generate_summary(file_name, top_n=5):
 
     # Step 4 - Sort the rank and pick top sentences
     ranked_sentence = sorted(((scores[i],s) for i,s in enumerate(sentences)), reverse=True)    
-    print("Indexes of top ranked_sentence order are ", ranked_sentence)    
 
     for i in range(top_n):
       summarize_text.append(" ".join(ranked_sentence[i][1]))
@@ -84,4 +124,8 @@ def generate_summary(file_name, top_n=5):
     print("Summarize Text: \n", ". ".join(summarize_text))
 
 # let's begin
-generate_summary( "msft.txt", 2)
+#the_url = "https://www.bbc.com/news/world-europe-51815911"
+#the_url = "https://www.rte.ie/news/2020/0311/1121526-harris-covid-19/"
+the_url = "https://www.newsroom.co.nz/ideasroom/2020/03/12/1077762/eight-job-myths-about-artificial-intelligence"
+
+generate_summary(the_url, 5)
